@@ -23,6 +23,16 @@ namespace :handy do
       export2local "#{heroku_app_name(t, args)}-production"
     end
 
+    desc "Takes snapshot of production db, copies to dev and keeps latest.dump"
+    task :prod2dev_keep, :app do |t, args|
+      export2local_keep "#{heroku_app_name(t, args)}-production"
+    end
+
+    desc "Restore latest.dump of database"
+    task :restore_latest_dump, :app do |t, args|
+      execute restore_command
+    end
+
     desc "Takes snapshot of staging db and copies staging data to development"
     task :staging2development, :app do |t, args|
       export2local "#{heroku_app_name(t, args)}-staging"
@@ -74,6 +84,12 @@ namespace :handy do
       execute restore_command + "; rm latest.dump"
     end
 
+    def export2local_keep(app_name)
+      take_current_snapshot(app_name)
+      execute "curl -o latest.dump `heroku pg:backups public-url --app #{app_name}`"
+      execute restore_command
+    end
+
     def take_current_snapshot(app_name)
       execute "heroku pg:backups capture --app #{app_name}"
     end
@@ -104,5 +120,7 @@ ERROR_MSG
       result + " -d #{local_database} latest.dump"
     end
   end
+
+  #curl -o latest.dump `heroku pg:backups public-url --app agent-bright-production`
 
 end

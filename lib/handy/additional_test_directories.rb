@@ -1,3 +1,5 @@
+require "rake/testtask.rb"
+
 # Adding test/services directory to the rake test.
 namespace :test do
   desc "Test services code"
